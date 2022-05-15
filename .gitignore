@@ -1,0 +1,6 @@
+# These are some examples of commonly ignored file patterns.# idea project files
+.idea/
+*.iml
+
+# compiler output
+target/
