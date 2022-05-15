@@ -1,2 +1,30 @@
 # IT_Hub-Severstal-task
-Test task "Notes application" for Severstal IT Hub internship program
+Test task "Notes application" for Severstal IT Hub internship program  
+  
+Задание: Необходимо создать приложение Заметки на одном из представленных языков
+программирования. Для реализации был выбран язык java с использванием фреймворка spring.  
+URL для работы с приложением: http://localhost:8080/
+  
+Обязательные требования:
+1) Создание одной простейшей заметки только с текстом.
+2) Редактирование заметки в окне собственного приложения.
+3) Сохранение заметки между сеансами приложения, в любом формате.
+4) При первом запуске, приложение должно иметь одну заметку с текстом.
+
+Cтек проекта:
+1) Фреймворк spring boot
+2) Шаблоны ui - FreeMarket
+3) flywaydb для миграции бд
+4) lombok библиотека для управления сущностями
+5) СУБД - postgresql
+
+Страница авторизации:
+![image](https://user-images.githubusercontent.com/52162935/168485054-a41d664b-df30-43a5-8ae3-b5a682bbcfd8.png)
+
+Страница заметок (Вкладка "Мои заметки"):
+![image](https://user-images.githubusercontent.com/52162935/168485093-0960b0ea-383a-4e9c-a19c-3065b53ce0a6.png)
+
+Обновление заметки:
+![image](https://user-images.githubusercontent.com/52162935/168485157-c50846d2-136f-4657-83cd-ba309c5c89c5.png)
+
+
