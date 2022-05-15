@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,6 +14,7 @@ import ru.severstal.entity.Note;
 import ru.severstal.entity.User;
 import ru.severstal.repository.NoteRepo;
 
+import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -54,32 +57,41 @@ public class NotesController {
     @PostMapping("/main")
     public String addNote(
             @AuthenticationPrincipal User user,
-            @RequestParam String text,
-            @RequestParam String tag, Map<String, Object> model,
+            @Valid Note note,
+            BindingResult bindingResult,
+            Model model,
             @RequestParam("file") MultipartFile file
     ) throws IOException {
-        Note note = new Note(text, tag, user);
 
-        if (file != null && !file.getOriginalFilename().isEmpty()) {
-            File uploadDir = new File(uploadPath);
+        note.setAuthor(user);
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errorsMap = ControllerUtils.getErrors(bindingResult);
 
-            if (!uploadDir.exists()) {
-                uploadDir.mkdir();
+            model.mergeAttributes(errorsMap);
+            model.addAttribute("note", note);
+        }
+        else {
+            if (file != null && !file.getOriginalFilename().isEmpty()) {
+                File uploadDir = new File(uploadPath);
+
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdir();
+                }
+
+                String uuidFile = UUID.randomUUID().toString();
+                String resultFilename = uuidFile + "." + file.getOriginalFilename();
+
+                file.transferTo(new File(uploadPath + "/" + resultFilename));
+
+                note.setFilename(resultFilename);
             }
-
-            String uuidFile = UUID.randomUUID().toString();
-            String resultFilename = uuidFile + "." + file.getOriginalFilename();
-
-            file.transferTo(new File(uploadPath + "/" + resultFilename));
-
-            note.setFilename(resultFilename);
+            model.addAttribute("note", null);
+            noteRepo.save(note);
         }
 
-        noteRepo.save(note);
+        Iterable<Note> notes = noteRepo.findAllByUserId(user.getId());
 
-        Iterable<Note> notes = noteRepo.findAll();
-
-        model.put("notes", notes);
+        model.addAttribute("notes", notes);
 
         return "main";
     }
