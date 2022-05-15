@@ -7,6 +7,7 @@ import lombok.Setter;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "notes")
 @NoArgsConstructor
 @Setter
 @Getter
@@ -22,6 +23,8 @@ public class Note {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User author;
+
+    private String filename;
 
     public Note(String text, String tag, User user) {
         this.text = text;
