@@ -5,8 +5,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +20,7 @@ import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Controller
@@ -71,21 +74,10 @@ public class NotesController {
             model.addAttribute("note", note);
         }
         else {
-            if (file != null && !file.getOriginalFilename().isEmpty()) {
-                File uploadDir = new File(uploadPath);
+            saveFile(note, file);
 
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdir();
-                }
-
-                String uuidFile = UUID.randomUUID().toString();
-                String resultFilename = uuidFile + "." + file.getOriginalFilename();
-
-                file.transferTo(new File(uploadPath + "/" + resultFilename));
-
-                note.setFilename(resultFilename);
-            }
             model.addAttribute("note", null);
+
             noteRepo.save(note);
         }
 
@@ -94,5 +86,64 @@ public class NotesController {
         model.addAttribute("notes", notes);
 
         return "main";
+    }
+
+    private void saveFile(@Valid Note note, @RequestParam("file") MultipartFile file) throws IOException {
+        if (file != null && !file.getOriginalFilename().isEmpty()) {
+            File uploadDir = new File(uploadPath);
+
+            if (!uploadDir.exists()) {
+                uploadDir.mkdir();
+            }
+
+            String uuidFile = UUID.randomUUID().toString();
+            String resultFilename = uuidFile + "." + file.getOriginalFilename();
+
+            file.transferTo(new File(uploadPath + "/" + resultFilename));
+
+            note.setFilename(resultFilename);
+        }
+    }
+
+    @GetMapping("/user-notes/{user}")
+    public String userNotes(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable User user,
+            Model model,
+            @RequestParam(required = false) Note note
+    ) {
+        Set<Note> notes = user.getNotes();
+
+        model.addAttribute("notes", notes);
+        model.addAttribute("note", note);
+        model.addAttribute("isCurrentUser", currentUser.equals(user));
+
+        return "userNotes";
+    }
+
+    @PostMapping("/user-notes/{user}")
+    public String updateNote(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long user,
+            @RequestParam("id") Note note,
+            @RequestParam("text") String text,
+            @RequestParam("tag") String tag,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        if (note.getAuthor().equals(currentUser)) {
+            if (!StringUtils.isEmpty(text)) {
+                note.setText(text);
+            }
+
+            if (!StringUtils.isEmpty(tag)) {
+                note.setTag(tag);
+            }
+
+            saveFile(note, file);
+
+            noteRepo.save(note);
+        }
+
+        return "redirect:/main";
     }
 }
