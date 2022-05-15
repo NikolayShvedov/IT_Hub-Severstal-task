@@ -105,7 +105,7 @@ public class NotesController {
         }
     }
 
-    @GetMapping("/user-notes/{user}")
+    @GetMapping("/main/{user}")
     public String userNotes(
             @AuthenticationPrincipal User currentUser,
             @PathVariable User user,
@@ -121,7 +121,7 @@ public class NotesController {
         return "userNotes";
     }
 
-    @PostMapping("/user-notes/{user}")
+    @PostMapping("/main/{user}")
     public String updateNote(
             @AuthenticationPrincipal User currentUser,
             @PathVariable Long user,
